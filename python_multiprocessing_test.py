@@ -9,8 +9,9 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 TRIALS = 100
 TIME_AJUST_GEN = 0.070
-TIME_AJUST_SAVE = 0.50
+TIME_AJUST_SAVE = 0.020
 SAVE_PATH = "./tmp"
+IMAGE_SIZE = (640,480)
 
 def saveImage(image: Image.Image, filename: str):
     image.save(f"{SAVE_PATH}/{filename}.png")
@@ -20,18 +21,18 @@ def measure_process_time(process):
     time_start = time.time()
     process(TRIALS)
     time_elpsed = time.time() - time_start
-    print(f"total:{format(time_elpsed,'.3f')}[s]\taverage:{format(time_elpsed/TRIALS,'.3f')}[s]")
+    print(f"total:{format(time_elpsed,'.4f')}[s]\taverage:{format(time_elpsed/TRIALS,'.4f')}[s]")
 
 
 def experiment_img_gen(trial):
     for i in range(trial):
-        im = Image.effect_noise((640,480), 512)
+        im = Image.effect_noise(IMAGE_SIZE, 512)
         time.sleep(TIME_AJUST_GEN)
 
 def experiment_simple(trial: int):
     time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
     for i in range(trial):
-        im = Image.effect_noise((640,480), 512)
+        im = Image.effect_noise(IMAGE_SIZE, 512)
         time.sleep(TIME_AJUST_GEN)
         saveImage(im, f"normal_{time_stamp}_{i}")
 
@@ -39,7 +40,7 @@ def experiment_multi_thread(trial: int):
     time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for i in range(trial):
-            im = Image.effect_noise((640,480), 512)
+            im = Image.effect_noise(IMAGE_SIZE, 512)
             time.sleep(TIME_AJUST_GEN)
             executor.submit(saveImage, im, f"multi_thread_{time_stamp}_{i}")
 
@@ -47,7 +48,7 @@ def experiment_multi_process(trial: int):
     time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
     with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
         for i in range(trial):
-            im = Image.effect_noise((640,480), 512)
+            im = Image.effect_noise(IMAGE_SIZE, 512)
             time.sleep(TIME_AJUST_GEN)
             executor.submit(saveImage, im, f"multi_process_{time_stamp}_{i}")
 

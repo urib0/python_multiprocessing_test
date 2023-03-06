@@ -7,12 +7,14 @@ import time
 import os
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
-TRIALS = 2
-TIME_AJUST = 0.070
+TRIALS = 100
+TIME_AJUST_GEN = 0.070
+TIME_AJUST_SAVE = 0.50
 SAVE_PATH = "./tmp"
 
 def saveImage(image: Image.Image, filename: str):
     image.save(f"{SAVE_PATH}/{filename}.png")
+    time.sleep(TIME_AJUST_SAVE)
 
 def measure_process_time(process):
     time_start = time.time()
@@ -24,14 +26,13 @@ def measure_process_time(process):
 def experiment_img_gen(trial):
     for i in range(trial):
         im = Image.effect_noise((640,480), 512)
-        time.sleep(TIME_AJUST)
+        time.sleep(TIME_AJUST_GEN)
 
 def experiment_simple(trial: int):
     time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
     for i in range(trial):
         im = Image.effect_noise((640,480), 512)
-        # 画像生成と合わせて100msくらいに調整
-        time.sleep(TIME_AJUST)
+        time.sleep(TIME_AJUST_GEN)
         saveImage(im, f"normal_{time_stamp}_{i}")
 
 def experiment_multi_thread(trial: int):
@@ -39,9 +40,16 @@ def experiment_multi_thread(trial: int):
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for i in range(trial):
             im = Image.effect_noise((640,480), 512)
-            # 画像生成と合わせて100msくらいに調整
-            time.sleep(TIME_AJUST)
+            time.sleep(TIME_AJUST_GEN)
             executor.submit(saveImage, im, f"multi_thread_{time_stamp}_{i}")
+
+def experiment_multi_process(trial: int):
+    time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+    with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
+        for i in range(trial):
+            im = Image.effect_noise((640,480), 512)
+            time.sleep(TIME_AJUST_GEN)
+            executor.submit(saveImage, im, f"multi_process_{time_stamp}_{i}")
 
 
 if not os.path.exists(SAVE_PATH):
@@ -57,3 +65,6 @@ measure_process_time(experiment_simple)
 
 print(f"- execute:{experiment_multi_thread.__name__}")
 measure_process_time(experiment_multi_thread)
+
+print(f"- execute:{experiment_multi_process.__name__}")
+measure_process_time(experiment_multi_process)

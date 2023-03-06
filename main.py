@@ -6,28 +6,28 @@ import datetime
 import time
 import os
 
-TRIALS = 100
-DEBUG = True
+TRIALS = 20
+TIME_AJUST = 0.070
+SAVE_PATH = "./tmp"
 
 def saveImage(image: Image.Image,path: str, filename: str):
     time_stamp = datetime.datetime.now()
-    if not os.path.exists(path):
-        os.makedirs("./"+path)
-    image.save(f"./{path}/{time_stamp.strftime('%Y%m%d%H%M%S%f')}_{filename}.png")
+    image.save(f"{path}/{time_stamp.strftime('%Y%m%d%H%M%S%f')}_{filename}.png")
 
 def experiment_img_gen(trial):
     for i in range(trial):
         im = Image.effect_noise((640,480), 512)
+        time.sleep(TIME_AJUST)
 
 def experiment_simple(trial: int):
     for i in range(trial):
-        time_start = time.time()
         im = Image.effect_noise((640,480), 512)
-        time_gen = time.time() - time_start
+        # 画像生成と合わせて100msくらいに調整
+        time.sleep(TIME_AJUST)
+        saveImage(im, SAVE_PATH, i)
 
-        time_start = time.time()
-        saveImage(im, "tmp", "test")
-        time_save = time.time() - time_start
+if not os.path.exists(SAVE_PATH):
+    os.makedirs(SAVE_PATH)
 
 print(f"trials:{TRIALS}")
 
